@@ -230,21 +230,26 @@ const NeuralNetworkPanel: React.FC<NeuralNetworkPanelProps> = ({
 
         // weight-based visuals
         const absWeight = Math.abs(weight)
-        const lineWidth = Math.max(0.5, absWeight * 3)
-        const opacity = Math.max(0.2, absWeight * 0.8)
+        const lineWidth = Math.max(1, absWeight * 5) // Thicker lines
+        const opacity = Math.max(0.3, absWeight * 1.0) // Higher opacity
 
-        // color by sign
+        // color by sign (Neon colors)
         const color =
           weight >= 0
-            ? `rgba(0, 150, 255, ${opacity})`
-            : `rgba(255, 50, 50, ${opacity})`
+            ? `rgba(0, 255, 255, ${opacity})` // Cyan
+            : `rgba(255, 0, 80, ${opacity})` // Neon Red
 
         ctx.strokeStyle = color
         ctx.lineWidth = lineWidth
+        ctx.shadowBlur = 10 // Glow effect
+        ctx.shadowColor = color
         ctx.beginPath()
         ctx.moveTo(fromPos.x, fromPos.y)
         ctx.lineTo(toPos.x, toPos.y)
         ctx.stroke()
+
+        // Reset shadow for performance/correctness if needed, but here we want everything to glow
+        ctx.shadowBlur = 0
       })
     })
   }
@@ -258,13 +263,17 @@ const NeuralNetworkPanel: React.FC<NeuralNetworkPanelProps> = ({
     opts?: { radius?: number; labelLeft?: boolean; hideValue?: boolean }
   ) => {
     // node circle with activation alpha
-    const alpha = 0.3 + activation * 0.7
+    const alpha = 0.4 + activation * 0.6
     const radius = opts?.radius ?? NN_CONFIG.NODE_RADIUS
 
-    ctx.fillStyle = `rgba(0, 150, 255, ${alpha})`
+    const color = `rgba(0, 255, 255, ${alpha})`
+    ctx.fillStyle = color
+    ctx.shadowBlur = 15
+    ctx.shadowColor = 'rgba(0, 255, 255, 0.8)'
     ctx.beginPath()
     ctx.arc(x, y, radius, 0, Math.PI * 2)
     ctx.fill()
+    ctx.shadowBlur = 0 // Reset shadow
 
     // node border
     ctx.strokeStyle = '#333333'

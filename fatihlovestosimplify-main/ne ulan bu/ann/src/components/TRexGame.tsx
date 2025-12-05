@@ -963,6 +963,16 @@ const TRexGame: React.FC<TRexGameProps> = ({
         gameData.tRexes.length > 0 &&
         gameData.networks.length === gameData.tRexes.length
       ) {
+        // Find best alive dino for visualization
+        let bestDinoIdx = 0
+        let maxFit = -Infinity
+        for (let k = 0; k < gameData.tRexes.length; k++) {
+          if (gameData.tRexes[k].alive && gameData.fitness[k] > maxFit) {
+            maxFit = gameData.fitness[k]
+            bestDinoIdx = k
+          }
+        }
+
         for (let i = 0; i < gameData.tRexes.length; i++) {
           const trex = gameData.tRexes[i]
           if (!trex.alive) continue
@@ -1046,8 +1056,15 @@ const TRexGame: React.FC<TRexGameProps> = ({
             }
           }
 
-          // keep panel visualization alive by feeding first t-rex inputs
-          if (i === 0 && networkManager) {
+          // keep panel visualization alive by feeding best t-rex inputs
+          if (i === bestDinoIdx && networkManager) {
+            // Sync weights to match the best dino
+            // We do this every frame for the best dino to ensure the visualizer matches the behavior
+            // (Optimization: could check if bestDinoIdx changed, but this is safe)
+            networkManager.setNetworkFromFlatWeights(
+              gameData.networks[i].getWeights()
+            )
+
             networkManager.processGameInputs({
               obstacleDistance: gameInputs.obstacleDistance,
               obstacleHeight: gameInputs.obstacleHeight,
